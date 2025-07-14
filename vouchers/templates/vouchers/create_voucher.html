@@ -1,0 +1,123 @@
+{% extends 'vouchers/base.html' %}
+{% block title %}Create Voucher{% endblock %}
+
+{% block content %}
+    <h2>Generate Voucher</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Voucher Type -->
+        <div class="mb-3">
+            <label class="form-label">Voucher Type:</label>
+            {{ voucher_form.voucher_type }}
+        </div>
+        
+        <hr>
+        <h3>Items</h3>
+
+        {{ item_formset.management_form }}
+        <div id="item-form-list">
+            {% for form in item_formset %}
+            <div class="form-row item-form">
+                <div class="col-auto"><b>#<span class="item-number">{{ forloop.counter }}</span></b></div>
+                <div class="col">{{ form.account.label_tag }} {{ form.account }}</div>
+                <div class="col">{{ form.description.label_tag }} {{ form.description }}</div>
+                <div class="col">{{ form.amount.label_tag }} {{ form.amount }}</div>
+                <div class="col-auto">
+                    {% if form.instance.pk %}
+                        {{ form.DELETE.label_tag }} {{ form.DELETE }}
+                    {% endif %}
+                    <button type="button" class="btn btn-danger btn-sm delete-form-row">X</button>
+                </div>
+                {{ form.id }}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- This is a template for new forms -->
+        <div id="empty-form" class="form-row item-form" style="display:none;">
+            <div class="col-auto"><b>#<span class="item-number">__prefix__</span></b></div>
+            <div class="col">{{ item_formset.empty_form.account.label_tag }} {{ item_formset.empty_form.account }}</div>
+            <div class="col">{{ item_formset.empty_form.description.label_tag }} {{ item_formset.empty_form.description }}</div>
+            <div class="col">{{ item_formset.empty_form.amount.label_tag }} {{ item_formset.empty_form.amount }}</div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-danger btn-sm delete-form-row">X</button>
+            </div>
+            {{ item_formset.empty_form.id }}
+        </div>
+        
+        <button type="button" id="add-item-form" class="btn btn-secondary mt-2">+</button>
+        
+        <hr>
+        <div class="total-amount-display">Total Amount: $<span id="total-amount">0.00</span></div>
+
+        <button type="submit" class="btn btn-success mt-4">Generate Voucher</button>
+    </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemFormList = document.querySelector('#item-form-list');
+    const addItemButton = document.querySelector('#add-item-form');
+    const emptyFormTemplate = document.querySelector('#empty-form').cloneNode(true);
+    emptyFormTemplate.removeAttribute('id');
+    emptyFormTemplate.style.display = 'flex';
+
+    const totalFormsInput = document.querySelector('#id_items-TOTAL_FORMS');
+    let formNum = itemFormList.querySelectorAll('.item-form').length;
+
+    // --- Add a new form ---
+    addItemButton.addEventListener('click', function() {
+        const newForm = emptyFormTemplate.cloneNode(true);
+        const formRegex = /__prefix__/g;
+
+        // Replace prefix with the new form number
+        newForm.innerHTML = newForm.innerHTML.replace(formRegex, formNum);
+
+        itemFormList.appendChild(newForm);
+        totalFormsInput.value = parseInt(totalFormsInput.value) + 1;
+        formNum++;
+        updateItemNumbers();
+        updateEventListeners();
+    });
+
+    // --- Delete a form row ---
+    itemFormList.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('delete-form-row')) {
+            const rowToDelete = e.target.closest('.item-form');
+            rowToDelete.remove();
+            totalFormsInput.value = parseInt(totalFormsInput.value) - 1;
+            updateItemNumbers();
+            updateTotalAmount();
+        }
+    });
+
+    // --- Calculate Total Amount ---
+    function updateTotalAmount() {
+        let total = 0;
+        document.querySelectorAll('.item-form input[name$="-amount"]').forEach(function(input) {
+            if (input.value) {
+                total += parseFloat(input.value);
+            }
+        });
+        document.getElementById('total-amount').textContent = total.toFixed(2);
+    }
+
+    function updateItemNumbers() {
+        itemFormList.querySelectorAll('.item-form').forEach((form, index) => {
+            form.querySelector('.item-number').textContent = index + 1;
+        });
+    }
+    
+    function updateEventListeners() {
+        document.querySelectorAll('.item-form input[name$="-amount"]').forEach(function(input) {
+            input.removeEventListener('input', updateTotalAmount); // Avoid multiple listeners
+            input.addEventListener('input', updateTotalAmount);
+        });
+    }
+
+    // Initial setup
+    updateEventListeners();
+    updateTotalAmount();
+});
+</script>
+{% endblock %}

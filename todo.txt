@@ -1,0 +1,4 @@
+get pdf download to work ✅
+must add fields should have red asterisk 
+if must add fields missing, show message
+change voucher table schema and create form

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Voucher Management{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; }
+        .form-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .total-amount-display { font-size: 1.5rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Voucher Management System</h1>
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
