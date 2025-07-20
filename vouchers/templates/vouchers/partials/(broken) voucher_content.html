@@ -1,0 +1,80 @@
+{% load static %}
+{% comment %}
+    THIS FILE NOW CONTAINS ONLY THE HTML STRUCTURE.
+    ALL STYLING IS HANDLED BY THE PARENT TEMPLATE.
+{% endcomment %}
+
+<div class="voucher-page">
+    <div class="voucher-header">
+        <img src="{% static 'images/logo.png' %}" alt="Logo" class="logo">
+        <table class="voucher-info-table">
+            <tr><td class="voucher-type-cell">{{ voucher.get_voucher_type_display_full }}</td></tr>
+            <tr><td>Date: {{ voucher.date|date:"d-M-Y" }}</td></tr>
+            <tr><td>Voucher #: {{ voucher.voucher_id }}</td></tr>
+        </table>
+    </div>
+
+    <div class="voucher-body">
+        <div class="field-row">
+            <div><b>Payee:</b> {{ voucher.payee }}</div>
+        </div>
+        {% if voucher.memo %}
+        <div class="field-row">
+            <div><b>Memo:</b> {{ voucher.memo }}</div>
+        </div>
+        {% endif %}
+
+        {% if voucher.voucher_type == 'BPV' and voucher.bankpaymentvoucher %}
+        <div class="field-row">
+            <div><b>Cheque #:</b> {{ voucher.bankpaymentvoucher.cheque_no }}</div>
+            <div style="text-align: right;"><b>Bank:</b> {{ voucher.bankpaymentvoucher.bank }}</div>
+        </div>
+        {% elif voucher.voucher_type == 'BRV' and voucher.bankreceiptvoucher %}
+        <div class="field-row">
+            <div><b>Inst Type:</b> {{ voucher.bankreceiptvoucher.inst_type }}</div>
+            <div style="text-align: center;"><b>Inst #:</b> {{ voucher.bankreceiptvoucher.inst_no }}</div>
+            <div style="text-align: right;"><b>Bank:</b> {{ voucher.bankreceiptvoucher.bank }}</div>
+        </div>
+        {% endif %}
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Sr.</th>
+                    <th style="width: 50%;">Description</th>
+                    <th>Account</th>
+                    <th class="amount-col" style="width: 20%;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in voucher.items.all %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.account }}</td>
+                    <td class="amount-col">{{ item.amount|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2"></td>
+                    <td style="text-align: right;"><b>Total</b></td>
+                    <td class="amount-col">{{ voucher.total_amount|floatformat:2 }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="footer-section">
+        <div><b>Amount in Words:</b> {{ voucher.amount_in_words }}</div>
+        <div style="margin-top: 15px;"><b>Prepared By:</b> {{ voucher.prepared_by }}</div>
+    </div>
+
+    {% if voucher.voucher_type in 'BPV,CPV' %}
+    <div class="signature-section">
+        <div>Approved By</div>
+        <div>Received By</div>
+    </div>
+    {% endif %}
+</div>

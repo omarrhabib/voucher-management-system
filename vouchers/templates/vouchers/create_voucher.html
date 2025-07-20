@@ -2,60 +2,185 @@
 {% block title %}Create Voucher{% endblock %}
 
 {% block content %}
-    <h2>Generate Voucher</h2>
-    <form method="post">
+<div class="app-card">
+    <h2>Create Voucher</h2>
+    <hr>
+    
+    {% if voucher_form.non_field_errors or item_formset.non_form_errors %}
+        <div class="alert alert-danger">
+            {{ voucher_form.non_field_errors }}
+            {{ item_formset.non_form_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" id="voucher-form">
         {% csrf_token %}
 
-        <!-- Voucher Type -->
-        <div class="mb-3">
-            <label class="form-label">Voucher Type:</label>
-            {{ voucher_form.voucher_type }}
-        </div>
-        
-        <hr>
-        <h3>Items</h3>
-
-        {{ item_formset.management_form }}
-        <div id="item-form-list">
-            {% for form in item_formset %}
-            <div class="form-row item-form">
-                <div class="col-auto"><b>#<span class="item-number">{{ forloop.counter }}</span></b></div>
-                <div class="col">{{ form.account.label_tag }} {{ form.account }}</div>
-                <div class="col">{{ form.description.label_tag }} {{ form.description }}</div>
-                <div class="col">{{ form.amount.label_tag }} {{ form.amount }}</div>
-                <div class="col-auto">
-                    {% if form.instance.pk %}
-                        {{ form.DELETE.label_tag }} {{ form.DELETE }}
-                    {% endif %}
-                    <button type="button" class="btn btn-danger btn-sm delete-form-row">X</button>
+        <!-- Voucher Type Selection -->
+        <div class="mb-4">
+            <label class="form-label mandatory-label">Voucher Type</label>
+            <div>
+                {% for value, text in voucher_types %}
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="voucher_type" id="type_{{ value }}" value="{{ value }}" required>
+                    <label class="form-check-label" for="type_{{ value }}">{{ text }}</label>
                 </div>
-                {{ form.id }}
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
-        
-        <!-- This is a template for new forms -->
-        <div id="empty-form" class="form-row item-form" style="display:none;">
-            <div class="col-auto"><b>#<span class="item-number">__prefix__</span></b></div>
-            <div class="col">{{ item_formset.empty_form.account.label_tag }} {{ item_formset.empty_form.account }}</div>
-            <div class="col">{{ item_formset.empty_form.description.label_tag }} {{ item_formset.empty_form.description }}</div>
-            <div class="col">{{ item_formset.empty_form.amount.label_tag }} {{ item_formset.empty_form.amount }}</div>
-            <div class="col-auto">
-                <button type="button" class="btn btn-danger btn-sm delete-form-row">X</button>
-            </div>
-            {{ item_formset.empty_form.id }}
-        </div>
-        
-        <button type="button" id="add-item-form" class="btn btn-secondary mt-2">+</button>
-        
-        <hr>
-        <div class="total-amount-display">Total Amount: $<span id="total-amount">0.00</span></div>
 
-        <button type="submit" class="btn btn-success mt-4">Generate Voucher</button>
+        <!-- This div will be shown once a type is selected -->
+        <div id="voucher-details-section" style="display: none;">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Voucher ID</label>
+                    <input type="text" id="voucher_id_display" class="form-control" readonly>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label mandatory-label">Date</label>
+                    {{ voucher_form.date }}
+                    <div class="text-danger">{{ voucher_form.date.errors }}</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label mandatory-label">Payee</label>
+                    {{ voucher_form.payee }}
+                    <div class="text-danger">{{ voucher_form.payee.errors }}</div>
+                </div>
+                
+                <!-- Bank Specific Fields -->
+                <div class="col-md-6 conditional-field" id="bank-field" style="display: none;">
+                    <label class="form-label mandatory-label">Bank</label>
+                    {{ voucher_form.bank }}
+                    <div class="text-danger">{{ voucher_form.bank.errors }}</div>
+                </div>
+                <div class="col-md-6 conditional-field" id="cheque-field" style="display: none;">
+                    <label class="form-label mandatory-label">Cheque #</label>
+                    {{ voucher_form.cheque_no }}
+                    <div class="text-danger">{{ voucher_form.cheque_no.errors }}</div>
+                </div>
+                <div class="col-md-6 conditional-field" id="inst-type-field" style="display: none;">
+                    <label class="form-label mandatory-label">Instrument Type</label>
+                    {{ voucher_form.inst_type }}
+                    <div class="text-danger">{{ voucher_form.inst_type.errors }}</div>
+                </div>
+                <div class="col-md-6 conditional-field" id="inst-no-field" style="display: none;">
+                    <label class="form-label mandatory-label">Instrument #</label>
+                    {{ voucher_form.inst_no }}
+                    <div class="text-danger">{{ voucher_form.inst_no.errors }}</div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Memo</label>
+                    {{ voucher_form.memo }}
+                    <div class="text-danger">{{ voucher_form.memo.errors }}</div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Item Formset -->
+            <h5>Items</h5>
+            {{ item_formset.management_form }}
+            <div id="item-form-list">
+                {% for form in item_formset %}
+                <div class="form-row item-form">
+                    <div class="item-sr"><b>{{ forloop.counter }}</b></div>
+                    <div class="col">
+                        <label class="form-label">Account</label>
+                        {{ form.account }}
+                        <div class="text-danger">{{ form.account.errors }}</div>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Description</label>
+                        {{ form.description }}
+                        <div class="text-danger">{{ form.description.errors }}</div>
+                    </div>
+                    <div class="col">
+                        <label class="form-label">Amount</label>
+                        {{ form.amount }}
+                        <div class="text-danger">{{ form.amount.errors }}</div>
+                    </div>
+                    <div class="delete-btn-wrapper">
+                        <button type="button" class="btn btn-danger btn-round delete-form-row">×</button>
+                    </div>
+                    {{ form.id }}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div id="empty-form" class="form-row item-form" style="display:none;">
+                 <div class="item-sr"><b>__prefix__</b></div>
+                <div class="col">{{ item_formset.empty_form.account }}</div>
+                <div class="col">{{ item_formset.empty_form.description }}</div>
+                <div class="col">{{ item_formset.empty_form.amount }}</div>
+                <div class="delete-btn-wrapper">
+                    <button type="button" class="btn btn-danger btn-round delete-form-row">×</button>
+                </div>
+                {{ item_formset.empty_form.id }}
+            </div>
+            
+            <button type="button" id="add-item-form" class="btn btn-primary-custom btn-round mt-2">+</button>
+
+            <hr class="my-4">
+
+            <!-- Totals and Final Fields -->
+             <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <label class="form-label">Amount in Words</label>
+                    <input type="text" id="amount-in-words-display" class="form-control" readonly>
+                </div>
+                 <div class="col-md-4 text-end">
+                    <h4>Total: <span id="total-amount-display" class="fw-bold">0.00</span></h4>
+                </div>
+                 <div class="col-md-12">
+                    <label class="form-label mandatory-label">Prepared By</label>
+                    {{ voucher_form.prepared_by }}
+                    <div class="text-danger">{{ voucher_form.prepared_by.errors }}</div>
+                </div>
+            </div>
+
+            <div class="mt-4 text-end">
+                <button type="submit" class="btn btn-primary-custom btn-lg">Generate</button>
+            </div>
+        </div>
     </form>
+</div>
+{% endblock %}
 
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/num2words@0.2.2/num2words.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const voucherDetailsSection = document.getElementById('voucher-details-section');
+    const voucherTypeRadios = document.querySelectorAll('input[name="voucher_type"]');
+
+    // --- Dynamic Form Logic ---
+    voucherTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            voucherDetailsSection.style.display = 'block';
+            updateConditionalFields(this.value);
+            // Simulate generating an ID. The real one is created on the server.
+            document.getElementById('voucher_id_display').value = this.value + "-XXXXX";
+        });
+    });
+
+    function updateConditionalFields(type) {
+        // Hide all conditional fields first
+        document.querySelectorAll('.conditional-field').forEach(field => field.style.display = 'none');
+
+        if (type === 'BPV' || type === 'BRV') {
+            document.getElementById('bank-field').style.display = 'block';
+        }
+        if (type === 'BPV') {
+            document.getElementById('cheque-field').style.display = 'block';
+        }
+        if (type === 'BRV') {
+            document.getElementById('inst-type-field').style.display = 'block';
+            document.getElementById('inst-no-field').style.display = 'block';
+        }
+    }
+    
+    // --- Item Formset Logic (similar to before, but adapted) ---
     const itemFormList = document.querySelector('#item-form-list');
     const addItemButton = document.querySelector('#add-item-form');
     const emptyFormTemplate = document.querySelector('#empty-form').cloneNode(true);
@@ -65,59 +190,67 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalFormsInput = document.querySelector('#id_items-TOTAL_FORMS');
     let formNum = itemFormList.querySelectorAll('.item-form').length;
 
-    // --- Add a new form ---
     addItemButton.addEventListener('click', function() {
         const newForm = emptyFormTemplate.cloneNode(true);
         const formRegex = /__prefix__/g;
-
-        // Replace prefix with the new form number
         newForm.innerHTML = newForm.innerHTML.replace(formRegex, formNum);
-
         itemFormList.appendChild(newForm);
-        totalFormsInput.value = parseInt(totalFormsInput.value) + 1;
+        totalFormsInput.value = formNum + 1;
         formNum++;
+        updateAll();
+    });
+
+    function updateAll() {
         updateItemNumbers();
+        updateTotalAmount();
         updateEventListeners();
-    });
-
-    // --- Delete a form row ---
-    itemFormList.addEventListener('click', function(e) {
-        if (e.target && e.target.classList.contains('delete-form-row')) {
-            const rowToDelete = e.target.closest('.item-form');
-            rowToDelete.remove();
-            totalFormsInput.value = parseInt(totalFormsInput.value) - 1;
-            updateItemNumbers();
-            updateTotalAmount();
-        }
-    });
-
-    // --- Calculate Total Amount ---
-    function updateTotalAmount() {
-        let total = 0;
-        document.querySelectorAll('.item-form input[name$="-amount"]').forEach(function(input) {
-            if (input.value) {
-                total += parseFloat(input.value);
-            }
-        });
-        document.getElementById('total-amount').textContent = total.toFixed(2);
-    }
-
-    function updateItemNumbers() {
-        itemFormList.querySelectorAll('.item-form').forEach((form, index) => {
-            form.querySelector('.item-number').textContent = index + 1;
-        });
     }
     
     function updateEventListeners() {
-        document.querySelectorAll('.item-form input[name$="-amount"]').forEach(function(input) {
-            input.removeEventListener('input', updateTotalAmount); // Avoid multiple listeners
+        // For deleting rows
+        itemFormList.querySelectorAll('.delete-form-row').forEach(btn => {
+            btn.removeEventListener('click', deleteRow);
+            btn.addEventListener('click', deleteRow);
+        });
+        // For amount calculation
+        itemFormList.querySelectorAll('input[name$="-amount"]').forEach(input => {
+            input.removeEventListener('input', updateTotalAmount);
             input.addEventListener('input', updateTotalAmount);
         });
     }
 
+    function deleteRow(e) {
+        const rowToDelete = e.target.closest('.item-form');
+        rowToDelete.remove();
+        // Note: Django's formset handles deletion via the management form
+        // so we don't need to decrement total forms here if using can_delete.
+        // For newly added rows that aren't saved, this is fine.
+        updateAll();
+    }
+
+    function updateItemNumbers() {
+        itemFormList.querySelectorAll('.item-form').forEach((form, index) => {
+            form.querySelector('.item-sr b').textContent = index + 1;
+        });
+    }
+
+    function updateTotalAmount() {
+        let total = 0;
+        document.querySelectorAll('.item-form input[name$="-amount"]').forEach(function(input) {
+            if (input.value) {
+                total += parseFloat(input.value) || 0;
+            }
+        });
+        document.getElementById('total-amount-display').textContent = total.toFixed(2);
+        
+        // Update amount in words
+        const totalInt = Math.floor(total);
+        const words = num2words(totalInt, { to: 'cardinal', lang: 'en_IN' }).replace(/\b\w/g, l => l.toUpperCase());
+        document.getElementById('amount-in-words-display').value = `${words} Rupees only`;
+    }
+    
     // Initial setup
     updateEventListeners();
-    updateTotalAmount();
 });
 </script>
 {% endblock %}

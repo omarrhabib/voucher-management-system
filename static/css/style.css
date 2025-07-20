@@ -1,0 +1,193 @@
+/* static/css/style.css */
+
+:root {
+    --dark-blue: #00428c;
+    --light-blue: #87a6bb;
+    --white: #ffffff;
+    --light-bg: #ffffff;
+    --light-text: #212529;
+    --dark-bg: #495057;
+    --dark-text: #f8f9fa;
+    --overlay-opacity-light: 0.3;
+    --overlay-opacity-dark: 0.7;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--light-text);
+    background-color: #f8f9fa;
+    margin: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('../images/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    z-index: -2;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    opacity: var(--overlay-opacity-light);
+    z-index: -1;
+    transition: opacity 0.3s;
+}
+
+/* Dark Mode */
+body.dark-mode {
+    color: var(--dark-text);
+}
+body.dark-mode::after {
+    opacity: var(--overlay-opacity-dark);
+}
+body.dark-mode .app-card {
+    background-color: var(--dark-bg);
+    border-color: var(--light-blue);
+}
+body.dark-mode .form-control {
+    background-color: #6c757d;
+    color: var(--dark-text);
+    border-color: var(--light-blue);
+}
+body.dark-mode .form-control:focus {
+    background-color: #6c757d;
+    color: var(--dark-text);
+}
+
+/* Header */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+.logo {
+    width: calc(100% / 7);
+    height: auto;
+}
+
+/* Dark Mode Toggle */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+}
+.theme-switch {
+    display: inline-block;
+    height: 24px;
+    position: relative;
+    width: 50px;
+}
+.theme-switch input {
+    display:none;
+}
+.slider {
+    background-color: #ccc;
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+    border-radius: 34px;
+}
+.slider:before {
+    background-color: #fff;
+    bottom: 2px;
+    content: "";
+    height: 20px;
+    left: 2px;
+    position: absolute;
+    transition: .4s;
+    width: 20px;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: var(--dark-blue);
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Main Content & Cards */
+.main-container {
+    padding: 0 2rem 2rem 2rem;
+}
+.app-card {
+    background-color: var(--light-bg);
+    border: 1px solid #dee2e6;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Buttons */
+.btn-primary-custom {
+    background-color: var(--dark-blue);
+    border-color: var(--dark-blue);
+    color: var(--white);
+}
+.btn-primary-custom:hover {
+    background-color: #003366;
+    border-color: #003366;
+    color: var(--white);
+}
+.btn-secondary-custom {
+    background-color: var(--light-blue);
+    border-color: var(--light-blue);
+    color: var(--dark-blue);
+}
+.btn-round {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 0;
+}
+
+/* Forms */
+.form-label {
+    font-weight: 500;
+}
+.mandatory-label::after {
+    content: ' *';
+    color: red;
+}
+#item-form-list .form-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+#item-form-list .form-row > * {
+    flex: 1;
+}
+#item-form-list .form-row > .item-sr,
+#item-form-list .form-row > .delete-btn-wrapper {
+    flex: 0 0 40px;
+}
+
+/* Voucher Detail Page Navigation */
+.voucher-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}

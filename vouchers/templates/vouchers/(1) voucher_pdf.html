@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Voucher {{ voucher.voucher_id }}</title>
+    <style>
+        /* THIS IS THE CRITICAL FIX: The @page rule is now embedded in the HTML head */
+        @page {
+            size: A4 portrait;
+            margin: 1in;
+        }
+
+        /* All other styles are also included here for a self-contained document */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+      
+        .voucher-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+        }
+        .voucher-header .logo {
+            width: 25%;
+            height: auto;
+        }
+        .voucher-info-table {
+            border: 1px solid black;
+            font-size: 12px;
+            border-collapse: collapse;
+        }
+        .voucher-info-table td {
+            border: 1px solid black;
+            padding: 5px;
+            text-align: center;
+        }
+        .voucher-type-cell {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .voucher-body {
+            margin-top: 20px;
+        }
+        .voucher-body .field-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .voucher-body .field-row > div {
+            width: 100%;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        .items-table th {
+            background-color: #f2f2f2;
+        }
+        .items-table .amount-col {
+            text-align: right;
+        }
+        .items-table tfoot td {
+            font-weight: bold;
+        }
+        .footer-section {
+            margin-top: 30px;
+            font-size: 14px;
+        }
+        .signature-section {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-section div {
+            border-top: 1px solid black;
+            padding-top: 5px;
+            width: 200px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'vouchers/partials/voucher_content.html' %}
+</body>
+</html>

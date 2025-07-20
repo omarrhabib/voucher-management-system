@@ -1,0 +1,11 @@
+{% extends 'vouchers/base.html' %}
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="height: 70vh;">
+    <div class="text-center">
+        <a href="{% url 'create_voucher' %}" class="btn btn-primary-custom btn-lg px-5 py-3 m-2">Create Voucher</a>
+        <a href="{% url 'voucher_list' %}" class="btn btn-secondary-custom btn-lg px-5 py-3 m-2">View Vouchers</a>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,169 @@
+{% comment %}
+    THIS IS A DEDICATED TEMPLATE ONLY FOR PDF GENERATION.
+    IT IS SELF-CONTAINED AND DOES NOT AFFECT ANY OTHER PAGE.
+{% endcomment %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Voucher {{ voucher.voucher_id }}</title>
+    <style>
+        /* THIS IS THE CRITICAL FIX: The @page rule is now embedded in the HTML head */
+        @page {
+            size: A4 portrait;
+            margin: 1in;
+        }
+
+        /* All other styles are also included here for a self-contained document */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .voucher-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+        }
+        .voucher-header .logo {
+            width: 25%;
+            height: auto;
+        }
+        .voucher-info-table {
+            border: 1px solid black;
+            font-size: 12px;
+            border-collapse: collapse;
+        }
+        .voucher-info-table td {
+            border: 1px solid black;
+            padding: 5px;
+            text-align: center;
+        }
+        .voucher-type-cell {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .voucher-body {
+            margin-top: 20px;
+        }
+        .voucher-body .field-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .voucher-body .field-row > div {
+            width: 100%;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .items-table th, .items-table td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        .items-table th {
+            background-color: #f2f2f2;
+        }
+        .items-table .amount-col {
+            text-align: right;
+        }
+        .items-table tfoot td {
+            font-weight: bold;
+        }
+        .footer-section {
+            margin-top: 30px;
+            font-size: 14px;
+        }
+        .signature-section {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-section div {
+            border-top: 1px solid black;
+            padding-top: 5px;
+            width: 200px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="voucher-page">
+    <div class="voucher-header">
+        <img src="{% static 'images/logo.png' %}" alt="Logo" class="logo">
+        <table class="voucher-info-table">
+            <tr><td class="voucher-type-cell">{{ voucher.get_voucher_type_display_full }}</td></tr>
+            <tr><td>Date: {{ voucher.date|date:"d-M-Y" }}</td></tr>
+            <tr><td>Voucher #: {{ voucher.voucher_id }}</td></tr>
+        </table>
+    </div>
+    <div class="voucher-body">
+        <div class="field-row">
+            <div><b>Payee:</b> {{ voucher.payee }}</div>
+        </div>
+        {% if voucher.memo %}
+        <div class="field-row">
+            <div><b>Memo:</b> {{ voucher.memo }}</div>
+        </div>
+        {% endif %}
+        {% if voucher.voucher_type == 'BPV' and voucher.bankpaymentvoucher %}
+        <div class="field-row">
+            <div><b>Cheque #:</b> {{ voucher.bankpaymentvoucher.cheque_no }}</div>
+            <div style="text-align: right;"><b>Bank:</b> {{ voucher.bankpaymentvoucher.bank }}</div>
+        </div>
+        {% elif voucher.voucher_type == 'BRV' and voucher.bankreceiptvoucher %}
+        <div class="field-row">
+            <div><b>Inst Type:</b> {{ voucher.bankreceiptvoucher.inst_type }}</div>
+            <div style="text-align: center;"><b>Inst #:</b> {{ voucher.bankreceiptvoucher.inst_no }}</div>
+            <div style="text-align: right;"><b>Bank:</b> {{ voucher.bankreceiptvoucher.bank }}</div>
+        </div>
+        {% endif %}
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Sr.</th>
+                    <th style="width: 50%;">Description</th>
+                    <th>Account</th>
+                    <th class="amount-col" style="width: 20%;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in voucher.items.all %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.description }}</td>
+                    <td>{{ item.account }}</td>
+                    <td class="amount-col">{{ item.amount|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2"></td>
+                    <td style="text-align: right;"><b>Total</b></td>
+                    <td class="amount-col">{{ voucher.total_amount|floatformat:2 }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div class="footer-section">
+        <div><b>Amount in Words:</b> {{ voucher.amount_in_words }}</div>
+        <div style="margin-top: 15px;"><b>Prepared By:</b> {{ voucher.prepared_by }}</div>
+    </div>
+    {% if voucher.voucher_type in 'BPV,CPV' %}
+    <div class="signature-section">
+        <div>Approved By</div>
+        <div>Received By</div>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>
